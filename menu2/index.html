@@ -9,17 +9,21 @@
   <link rel="stylesheet" href="/css/franklin.css">
   <link rel="stylesheet" href="/css/basic.css">
   <link rel="icon" href="/assets/favicon.png">
-   <title>More goodies</title>  
+   <title>About</title>  
 </head>
 <body>
   <header>
-<div class="blog-name"><a href="/">Basic Template</a></div>
+<div class="blog-name">
+  <a href="/">
+    <img src="/assets/logo.svg" height="64">
+  </a>
+</div>
 <nav>
   <ul>
-    <li><a href="/">Home</a></li>
-    <li><a href="/menu1/">Code blocks</a></li>
-    <li><a href="/menu2/">More goodies</a></li>
-    <li><a href="/menu3/">Tags</a></li>
+    <li><a href="/">JuDO</a></li>
+    <li><a href="/Packages/">Packages</a></li>
+    <li><a href="/About/">About</a></li>
+    <!--<li><a href="/menu3/">Tags</a></li>-->
   </ul>
   <img src="/assets/hamburger.svg" id="menu-icon">
 </nav>
@@ -33,11 +37,11 @@
 <h2 id="more_markdown_support"><a href="#more_markdown_support" class="header-anchor">More markdown support</a></h2>
 <p>The Julia Markdown parser in Julia&#39;s stdlib is not exactly complete and Franklin strives to bring useful extensions that are either defined in standard specs such as Common Mark or that just seem like useful extensions.</p>
 <ul>
-<li><p>indirect references for instance &#91;like so&#93;</p>
+<li><p>indirect references for instance <a href="http://existentialcomics.com/">like so</a></p>
 </li>
 </ul>
 <p> or also for images</p>
-<p>&#33;&#91;&#93;&#91;some image&#93;</p>
+<p><img src="https://upload.wikimedia.org/wikipedia/commons/9/90/Krul.svg" alt="some image"></p>
 <p>some people find that useful as it allows referring multiple times to the same link for instance.</p>
 
 <ul>
@@ -89,7 +93,7 @@ end</code></pre>
   var &#61; vname&#91;1&#93;
   return pagevar&#40;&quot;menu1&quot;, var&#41;
 end</code></pre>
-<p>Which you can use like this <code>&#123;&#123;m1fill title&#125;&#125;</code>: <strong>Franklin Example</strong>. Of course  in this specific case you could also have used <code>&#123;&#123;fill title menu1&#125;&#125;</code>: <strong>Code blocks</strong>.</p>
+<p>Which you can use like this <code>&#123;&#123;m1fill title&#125;&#125;</code>: <strong>JuDO - Julia for Dynamic Optimization</strong>. Of course  in this specific case you could also have used <code>&#123;&#123;fill title menu1&#125;&#125;</code>: <strong></strong>.</p>
 <p>Of course these examples are not very useful, in practice you might want to use it to generate actual HTML in a specific way using Julia code. For instance you can use it to customise how <a href="/menu3/#customising_tag_pages">tag pages look like</a>.</p>
 <p>A nice example of what you can do is in the <a href="https://juliasymbolics.github.io/SymbolicUtils.jl/api/">SymbolicUtils.jl manual</a> where they use a <code>hfun_</code> to generate HTML encapsulating the content of code docstrings, in a way doing something similar to what Documenter does. See <a href="https://github.com/JuliaSymbolics/SymbolicUtils.jl/blob/website/utils.jl">how they defined it</a>.</p>
 <p><strong>Note</strong>: the  output <strong>will not</strong> be reprocessed by Franklin, if you want to generate markdown which should be processed by Franklin, then use <code>return fd2html&#40;markdown, internal&#61;true&#41;</code> at the end.</p>
@@ -105,7 +109,7 @@ end</code></pre>
 <p>You can call the above with <code>\baz&#123;some string&#125;</code>: SOME STRING.</p>
 <p><strong>Note</strong>: the output <strong>will be</strong> reprocessed by Franklin, if you want to avoid this, then escape the output by using <code>return &quot;~~~&quot; * s * &quot;~~~&quot;</code> and it will be plugged  in as is in the HTML.</p>
 <div class="page-foot">
-    <a href="http://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a> Septimia Zenobia. Last modified: 0001-01-01.
+    <a href="http://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a> Septimia Zenobia. Last modified: June 14, 2024.
     Website built with <a href="https://github.com/tlienart/Franklin.jl">Franklin.jl</a> and the <a href="https://julialang.org">Julia programming language</a>.
 </div>
 </div><!-- CONTENT ENDS HERE -->

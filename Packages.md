@@ -1,5 +1,6 @@
 @def title = "Packages"
 @def hascode = true
+@def hasmath = true
 @def tags = ["packages"]
 
 # JuDO Packages
@@ -27,7 +28,7 @@ User code  (JuDO macros — @phase, @variable, @constraint, @objective...)
           │                           solvers...
           ▼
    NLP solver (Ipopt)
-
+```
 
 ---
 

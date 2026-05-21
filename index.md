@@ -3,7 +3,14 @@
 @def hascode = true
 @def hasmath = true
 
-**JuDO.jl** is a Julia package for formulating and solving dynamic optimisation problems (optimal control, trajectory optimisation, and more). It extends the [JuMP](https://jump.dev) modelling language with continuous-time variables, differential equations, and integral objectives — keeping solver details out of your model code.
+# About JuDO
+
+**JuDO** (Julia for Dynamic optimization) is an open-source modeling language developing a modern, solver-agnostic ecosystem for packages for dynamic optimization in Julia.
+
+Dynamic optimization problems arises across engineering fields (spacecraft trajectory design, robot motion planning, process control, etc.). 
+JuDO provides a simple formulation layer for users to define their problems mathematically, and an underlying abstracton layer DynOptInterface that provides necessary transformations to fit the dynamic-optimization solver.
+
+---
 
 # As easy as one-two-three
 
@@ -22,87 +29,49 @@ Julia 1.12 or later is required.
 
 ## 2. Define your problem
 
-The example below solves the classic **cart-pole swing-up**: a pendulum on a cart must be swung from hanging ($\theta=0$) to upright ($\theta=\pi$) by a horizontal force, while minimising total control effort $\int_0^{t_f} u^2 \, dt$.
+The example below solves a classic LQR problem formulation.
 
 ```julia
-using JuDO, Interesso
-
-const g = 9.81;  const l = 0.5;  const m_1 = 1.0;  const m_2 = 0.3
-const u_max = 20.0;  const r_max = 2.0
-
-dop = DynModel(Interesso.Optimizer)
-
-# Independent variable (time phase)
-@phase(dop, t)
-@constraint(dop, initial(t) == 0)
-@constraint(dop, final(t)   == 2)
-
-# States
-@variable(dop, 0 <= r <= r_max, DefinedOn(t))   # cart position (m)
-@variable(dop, ν,               DefinedOn(t))   # cart velocity (m/s)
-@variable(dop, θ,               DefinedOn(t))   # pole angle (rad)
-@variable(dop, ω,               DefinedOn(t))   # pole angular velocity (rad/s)
-
-# Control
-@variable(dop, -u_max <= u <= u_max, DefinedOn(t))  # horizontal force (N)
-
-# Boundary conditions: hanging → upright
-@constraint(dop, initial(r) == 0);  @constraint(dop, final(r) == 1)
-@constraint(dop, initial(ν) == 0);  @constraint(dop, final(ν) == 0)
-@constraint(dop, initial(θ) == 0);  @constraint(dop, final(θ) == pi)
-@constraint(dop, initial(ω) == 0);  @constraint(dop, final(ω) == 0)
-
-# Equations of motion (Lagrangian dynamics)
-@constraint(dop, derivative(r) == ν)
-@constraint(dop, derivative(ν) == (l*m_2*sin(θ)*ω^2 + u + m_2*g*cos(θ)*sin(θ)) /
-                                  (m_1 + m_2*sin(θ)^2))
-@constraint(dop, derivative(θ) == ω)
-@constraint(dop, derivative(ω) == (-l*m_2*cos(θ)*sin(θ)*ω^2 - u*cos(θ) - (m_1 + m_2)*g*sin(θ)) /
-                                  (l*(m_1 + m_2*sin(θ)^2)))
-
-# Minimise control effort
-@objective(dop, Min, integral(u^2))
-```
-
-## 3. Solve and extract the solution
-
-```julia
-using DynOptInterface
-
-# Warm-start with linear guesses between boundary values
-struct LinearInterpolant <: DynOptInterface.AbstractDynamicSolution
-    y_a::Float64;  y_b::Float64
-end
-(li::LinearInterpolant)(t::Real) = li.y_a + t * (li.y_b - li.y_a) / 2.0
-
-JuDO.warmstart!(dop, LinearInterpolant(0.0, 1.0), r)
-JuDO.warmstart!(dop, LinearInterpolant(0.0, pi),  θ)
-
-JuDO.optimize!(dop)
-
-# Solution trajectories are callable functions of time
-r_sol = dyn_value(dop, r)
-θ_sol = dyn_value(dop, θ)
-u_sol = dyn_value(dop, u)
-
+using Interesso, JuMP, JuDO, DynOptInterface
 using Plots
-ts = range(0, 2; length=200)
-plot(ts, θ_sol.(ts); xlabel="Time (s)", ylabel="Pole angle θ (rad)", legend=false)
+
+
+model = DynModel(Interesso.Optimizer)
+
+@phase(model, t, 0.0, 10.0)
+
+## Dynamic Variables
+@variable(model, -1.0 <= u <= 1.0, DefinedOn(t))
+@variable(model, x, DefinedOn(t))
+@variable(model, v, DefinedOn(t))
+
+## Boundary Conditions
+@constraint(model, initial(x) == 0.0)
+@constraint(model, initial(v) == 0.0)
+@constraint(model, final(x) == 20.0)
+@constraint(model, final(v) == 0.0)
+
+## Differential Equations
+@constraint(model, derivative(v) == u)
+@constraint(model, derivative(x) == v)
+
+## Objective
+@objective(model, Min, integral(2*x^2 + 2*v^2))
+
+JuDO.optimize!(model)
+
+## Extract solutions
+t_0 = phase_initial(t).value
+t_f = 10.0
+
+x_sol = dyn_value(model, x)
+v_sol = dyn_value(model, v)
+u_sol = dyn_value(model, u)
+
+## Plot
+p1 = plot(τ -> x_sol(τ), t_0, t_f; label="x(t)", ylabel="Position")
+p2 = plot(τ -> v_sol(τ), t_0, t_f; label="v(t)", ylabel="Velocity")
+p3 = plot(τ -> u_sol(τ), t_0, t_f; label="u(t)", ylabel="Control", xlabel="t")
+
+display(plot(p1, p2, p3; layout=(3, 1), size=(600, 700), legend=:topright))
 ```
-
-See the [Examples](/Examples/) page for the full annotated code and the aerospace [Space Shuttle Reentry](/Examples/#space_shuttle_reentry) benchmark (maximising crossrange; reference solution ≈ 34.14°).
-
----
-
-# The JuDO ecosystem
-
-JuDO follows the same layered architecture as JuMP / MathOptInterface:
-
-| Layer | Package | Role |
-|-------|---------|------|
-| **Modelling** | [JuDO.jl](https://github.com/JuDO-dev/JuDO.jl) | Solver-agnostic problem formulation |
-| **Interface** | [DynOptInterface.jl](https://github.com/shawn-tao01/DynOptInterface.jl) | Standard intermediate representation for dynamic optimisation |
-| **Solver** | [Interesso.jl](https://github.com/Kailai-Shi/Interesso.jl) | Collocation-based NLP transcription via Ipopt |
-
-A problem written in JuDO can in principle be solved by any solver that implements the DynOptInterface (DOI) standard — with no changes to the model code.
-See the [Packages](/Packages/) page for details on each package.

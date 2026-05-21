@@ -152,7 +152,7 @@ display(plot(p1, p2, p3; layout=(3,1), size=(600, 700)))
 
 ## Space Shuttle Reentry \{#space_shuttle_reentry\}
 
-This benchmark problem, due to Betts (2010), optimises the reentry trajectory of a space shuttle to **maximise the crossrange** (final latitude $\theta(t_f)$), subject to full six-state atmospheric flight dynamics and terminal boundary conditions. The reference optimal crossrange is approximately **34.14°**.
+This benchmark problem, optimizes the reentry trajectory of a space shuttle to **maximise the crossrange** (final latitude $\theta(t_f)$), subject to full six-state atmospheric flight dynamics and terminal boundary conditions. The reference optimal crossrange is approximately **34.14°**.
 
 ### Problem formulation
 

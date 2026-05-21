@@ -1,102 +1,45 @@
-<!doctype html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  
-   <link rel="stylesheet" href="/libs/highlight/styles/github.min.css">
-   
-  <link rel="stylesheet" href="/css/franklin.css">
-  <link rel="stylesheet" href="/css/basic.css">
-  <link rel="icon" href="/assets/favicon.png">
-   <title>JuDO - Julia for Dynamic Optimization</title>  
-</head>
-<body>
-  <header>
-<div class="blog-name">
-  <a href="/">
-    <div style="display: flex; align-items: center;">
-      <img src="/assets/logo.svg" height="64">
-      <span style="font-size: 20px">JuDO</span>
-    </div>
-  </a>
-</div>
-<nav>
-  <ul>
-    <li><a href="/">Home</a></li>
-    <li><a href="/Examples/">Examples</a></li>
-    <li><a href="/Packages/">Packages</a></li>
-    <li><a href="/About/">About</a></li>
-  </ul>
-  <img src="/assets/hamburger.svg" id="menu-icon">
-</nav>
-</header>
+<!doctype html> <html lang=en > <meta charset=UTF-8 > <meta name=viewport  content="width=device-width, initial-scale=1"> <link rel=stylesheet  href="/libs/katex/katex.min.css"> <link rel=stylesheet  href="/libs/highlight/styles/github.min.css"> <link rel=stylesheet  href="/css/franklin.css"> <link rel=stylesheet  href="/css/basic.css"> <link rel=icon  href="/assets/favicon.png"> <title>JuDO - Julia for Dynamic Optimization</title> <header> <div class=blog-name > <a href="/"> <div style="display: flex; align-items: center;"> <img src="/assets/logo.svg" height=64 > <span style="font-size: 20px">JuDO</span> </div> </a> </div> <nav> <ul> <li><a href="/index/">Home</a> <li><a href="/Examples/">Examples</a> <li><a href="/Packages/">Packages</a> <li><a href="/About/">About</a> </ul> <img src="/assets/hamburger.svg" id=menu-icon > </nav> </header> <div class=franklin-content ><h1 id=about_judo ><a href="#about_judo" class=header-anchor >About JuDO</a></h1> <p><strong>JuDO</strong> &#40;Julia for Dynamic optimization&#41; is an open-source modeling language developing a modern, solver-agnostic ecosystem for packages for dynamic optimization in Julia.</p> <p>Dynamic optimization problems arises across engineering fields &#40;spacecraft trajectory design, robot motion planning, process control, etc.&#41;. JuDO provides a simple formulation layer for users to define their problems mathematically, and an underlying abstracton layer DynOptInterface that provides necessary transformations to fit the dynamic-optimization solver.</p> <hr /> <h1 id=as_easy_as_one-two-three ><a href="#as_easy_as_one-two-three" class=header-anchor >As easy as one-two-three</a></h1> <h2 id=install ><a href="#install" class=header-anchor ><ol> <li><p>Install</p> </ol> </a></h2> <p>JuDO and its dependencies are under active development and not yet registered in the Julia General registry. Install directly from GitHub:</p> <pre><code class="julia hljs"><span class=hljs-keyword >using</span> Pkg
+Pkg.add(url=<span class=hljs-string >&quot;https://github.com/shawn-tao01/DynOptInterface.jl&quot;</span>, rev=<span class=hljs-string >&quot;dev&quot;</span>)
+Pkg.add(url=<span class=hljs-string >&quot;https://github.com/Kailai-Shi/Interesso.jl&quot;</span>,        rev=<span class=hljs-string >&quot;dev&quot;</span>)
+Pkg.add(url=<span class=hljs-string >&quot;https://github.com/shawn-tao01/JuDO.jl&quot;</span>, rev=<span class=hljs-string >&quot;dev&quot;</span>)</code></pre> <p>Julia 1.12 or later is required.</p> <h2 id=ol_start2_define_your_problem ><a href="#ol_start2_define_your_problem" class=header-anchor ><ol start=2 > <li><p>Define your problem</p> </ol> </a></h2> <p>The example below solves a classic LQR problem formulation.</p> <pre><code class="julia hljs"><span class=hljs-keyword >using</span> Interesso, JuMP, JuDO, DynOptInterface
+<span class=hljs-keyword >using</span> Plots
 
-<!-- Content appended here -->
-<div class="franklin-content"><p>Solve dynamic optimization problems in a quick and intuitive way.</p>
-<h1 id="as_easy_as_one-two-three"><a href="#as_easy_as_one-two-three" class="header-anchor">As easy as one-two-three</a></h1>
-<h2 id="choose_a_solver"><a href="#choose_a_solver" class="header-anchor"><ol>
-<li><p>Choose a solver</p>
-</li>
-</ol>
-</a></h2>
-<pre><code class="language-julia">using JuDO, Interesso
-model &#61; Model&#40;Interesso.Optimizer&#41;</code></pre>
-<h2 id="ol_start2_define_your_problem"><a href="#ol_start2_define_your_problem" class="header-anchor"><ol start="2">
-<li><p>Define your problem</p>
-</li>
-</ol>
-</a></h2>
-<pre><code class="language-julia"># Time
-@phase&#40;model, t&#41;
-@constraint&#40;model, initial&#40;t&#41; &#61;&#61; 0.0&#41;
-@constraint&#40;model, final&#40;t&#41; &#61;&#61; 2.0&#41;
 
-# States
-@dynamic_variable&#40;model, r, t&#41;
-@dynamic_variable&#40;model, v, t&#41;
-@dynamic_variable&#40;model, θ, t&#41;
-@dynamic_variable&#40;model, ω, t&#41;
+model = DynModel(Interesso.Optimizer)
 
-# Input
-@dynamic_variable&#40;model, -20.0 ≤ u ≤ 20.0, t&#41;
+<span class=hljs-meta >@phase</span>(model, t, <span class=hljs-number >0.0</span>, <span class=hljs-number >10.0</span>)
 
-# Differential Equations
-@constraint&#40;model, ∂&#40;r&#41; &#61;&#61; v&#41;
-@constraint&#40;model, ∂&#40;v&#41; &#61;&#61; ...&#41;
-@constraint&#40;model, ∂&#40;θ&#41; &#61;&#61; ω&#41;
-@constraint&#40;model, ∂&#40;ω&#41; &#61;&#61; ...&#41;
+<span class=hljs-comment >## Dynamic Variables</span>
+<span class=hljs-meta >@variable</span>(model, -<span class=hljs-number >1.0</span> &lt;= u &lt;= <span class=hljs-number >1.0</span>, DefinedOn(t))
+<span class=hljs-meta >@variable</span>(model, x, DefinedOn(t))
+<span class=hljs-meta >@variable</span>(model, v, DefinedOn(t))
 
-# Boundary Conditions
-@constraint&#40;model, initial&#40;r&#41; &#61;&#61; 0.0&#41;
-@constraint&#40;model, initial&#40;v&#41; &#61;&#61; 0.0&#41;
-@constraint&#40;model, initial&#40;θ&#41; &#61;&#61; 0.0&#41;
-@constraint&#40;model, initial&#40;ω&#41; &#61;&#61; 0.0&#41;
+<span class=hljs-comment >## Boundary Conditions</span>
+<span class=hljs-meta >@constraint</span>(model, initial(x) == <span class=hljs-number >0.0</span>)
+<span class=hljs-meta >@constraint</span>(model, initial(v) == <span class=hljs-number >0.0</span>)
+<span class=hljs-meta >@constraint</span>(model, final(x) == <span class=hljs-number >20.0</span>)
+<span class=hljs-meta >@constraint</span>(model, final(v) == <span class=hljs-number >0.0</span>)
 
-@constraint&#40;model, final&#40;r&#41; &#61;&#61; 2.0&#41;
-@constraint&#40;model, final&#40;v&#41; &#61;&#61; pi&#41;
-@constraint&#40;model, final&#40;θ&#41; &#61;&#61; 0.0&#41;
-@constraint&#40;model, final&#40;ω&#41; &#61;&#61; 0.0&#41;
+<span class=hljs-comment >## Differential Equations</span>
+<span class=hljs-meta >@constraint</span>(model, derivative(v) == u)
+<span class=hljs-meta >@constraint</span>(model, derivative(x) == v)
 
-# Objective Function
-@objective&#40;model, Min, ∫&#40;u^2&#41;&#41;</code></pre>
-<h2 id="ol_start3_get_a_solution"><a href="#ol_start3_get_a_solution" class="header-anchor"><ol start="3">
-<li><p>Get a solution</p>
-</li>
-</ol>
-</a></h2>
-<pre><code class="language-julia">optimize&#33;&#40;model&#41;
-plot&#40;r&#41;</code></pre>
-<div class="page-foot">
-    <a href="http://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a> Septimia Zenobia. Last modified: July 10, 2024.
-    Website built with <a href="https://github.com/tlienart/Franklin.jl">Franklin.jl</a> and the <a href="https://julialang.org">Julia programming language</a>.
-</div>
-</div><!-- CONTENT ENDS HERE -->
-    
-    
-        <script src="/libs/highlight/highlight.min.js"></script>
-<script>hljs.highlightAll();hljs.configure({tabReplace: '    '});</script>
+<span class=hljs-comment >## Objective</span>
+<span class=hljs-meta >@objective</span>(model, Min, integral(<span class=hljs-number >2</span>*x^<span class=hljs-number >2</span> + <span class=hljs-number >2</span>*v^<span class=hljs-number >2</span>))
 
-    
-  </body>
-</html>
+JuDO.optimize!(model)
+
+<span class=hljs-comment >## Extract solutions</span>
+t_0 = phase_initial(t).value
+t_f = <span class=hljs-number >10.0</span>
+
+x_sol = dyn_value(model, x)
+v_sol = dyn_value(model, v)
+u_sol = dyn_value(model, u)
+
+<span class=hljs-comment >## Plot</span>
+p1 = plot(τ -&gt; x_sol(τ), t_0, t_f; label=<span class=hljs-string >&quot;x(t)&quot;</span>, ylabel=<span class=hljs-string >&quot;Position&quot;</span>)
+p2 = plot(τ -&gt; v_sol(τ), t_0, t_f; label=<span class=hljs-string >&quot;v(t)&quot;</span>, ylabel=<span class=hljs-string >&quot;Velocity&quot;</span>)
+p3 = plot(τ -&gt; u_sol(τ), t_0, t_f; label=<span class=hljs-string >&quot;u(t)&quot;</span>, ylabel=<span class=hljs-string >&quot;Control&quot;</span>, xlabel=<span class=hljs-string >&quot;t&quot;</span>)
+
+display(plot(p1, p2, p3; layout=(<span class=hljs-number >3</span>, <span class=hljs-number >1</span>), size=(<span class=hljs-number >600</span>, <span class=hljs-number >700</span>), legend=:topright))</code></pre> <div class=page-foot > <a href="http://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a> Septimia Zenobia. Last modified: May 21, 2026. Website built with <a href="https://github.com/tlienart/Franklin.jl">Franklin.jl</a> and the <a href="https://julialang.org">Julia programming language</a>. </div> </div> <script src="/libs/highlight/highlight.min.js"></script> <script>hljs.highlightAll();hljs.configure({tabReplace: ' '});</script>

@@ -27,7 +27,7 @@ Pkg.add(url="https://github.com/shawn-tao01/JuDO.jl", rev="dev")
 
 Julia 1.12 or later is required.
 
-## 2. Define your problem
+## 2. Define, solve, plot
 
 The example below solves a classic LQR problem formulation.
 
